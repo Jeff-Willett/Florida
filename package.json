@@ -1,0 +1,15 @@
+{
+  "name": "florida-tracker",
+  "version": "1.0.0",
+  "description": "Florida Project Tracker - Decisions and Actions Management",
+  "scripts": {
+    "install-all": "cd code/backend && npm install && cd ../frontend && npm install",
+    "backend": "cd code/backend && npm start",
+    "frontend": "cd code/frontend && npm start",
+    "seed": "cd code/backend && npm run seed",
+    "start": "./launch.sh"
+  },
+  "keywords": ["tracker", "decisions", "actions"],
+  "author": "",
+  "license": "MIT"
+}
