@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Florida West Coast STR Regional Analysis Map</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        :root {
+            --bg-dark: #1a1a1a;
+            --bg-card: #2d2d2d;
+            --text-main: #f0f0f0;
+            --text-muted: #a0a0a0;
+            --accent: #3498db;
+            --success: #2ecc71;
+            --warning: #f1c40f;
+            --danger: #e74c3c;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        header {
+            background-color: var(--bg-card);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #444;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .legend {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        #map {
+            flex: 1;
+            width: 100%;
+            z-index: 1;
+        }
+
+        /* Custom Popup Styles */
+        .leaflet-popup-content-wrapper {
+            background: var(--bg-card);
+            color: var(--text-main);
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .leaflet-popup-content {
+            margin: 0;
+            width: 300px !important;
+        }
+
+        .leaflet-popup-tip {
+            background: var(--bg-card);
+        }
+
+        .popup-header {
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid #444;
+        }
+
+        .popup-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.2rem;
+        }
+
+        .popup-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .popup-body {
+            padding: 1rem;
+        }
+
+        .popup-stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 0.2rem;
+        }
+
+        .popup-stat-label {
+            color: var(--text-muted);
+        }
+
+        .popup-stat-value {
+            font-weight: 600;
+        }
+
+        .popup-verdict {
+            margin-top: 1rem;
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .verdict-green {
+            background: rgba(46, 204, 113, 0.2);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .verdict-blue {
+            background: rgba(52, 152, 219, 0.2);
+            color: var(--accent);
+            border: 1px solid var(--accent);
+        }
+
+        .verdict-yellow {
+            background: rgba(241, 196, 15, 0.2);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+
+        .verdict-red {
+            background: rgba(231, 76, 60, 0.2);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        /* Marker Colors */
+        .marker-pin {
+            width: 30px;
+            height: 30px;
+            border-radius: 50% 50% 50% 0;
+            background: var(--accent);
+            position: absolute;
+            transform: rotate(-45deg);
+            left: 50%;
+            top: 50%;
+            margin: -15px 0 0 -15px;
+        }
+
+        .marker-pin::after {
+            content: '';
+            width: 14px;
+            height: 14px;
+            margin: 8px 0 0 8px;
+            background: #fff;
+            position: absolute;
+            border-radius: 50%;
+        }
+
+        .marker-green {
+            background: var(--success);
+        }
+
+        .marker-blue {
+            background: var(--accent);
+        }
+
+        .marker-yellow {
+            background: var(--warning);
+        }
+
+        .marker-red {
+            background: var(--danger);
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>Florida West Coast STR Analysis</h1>
+        <div class="legend">
+            <div class="legend-item">
+                <div class="dot" style="background:var(--success)"></div>Top Tier
+            </div>
+            <div class="legend-item">
+                <div class="dot" style="background:var(--accent)"></div>Good / Budget
+            </div>
+            <div class="legend-item">
+                <div class="dot" style="background:var(--warning)"></div>Marginal
+            </div>
+            <div class="legend-item">
+                <div class="dot" style="background:var(--danger)"></div>Avoid
+            </div>
+        </div>
+    </header>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Initialize map centered on Florida West Coast
+        const map = L.map('map', {
+            center: [28.5, -84.0],
+            zoom: 7,
+            zoomControl: false
+        });
+
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+        // Dark mode map tiles
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Data from Analysis
+        const locations = [
+            {
+                name: "Fort Walton Beach",
+                lat: 30.4201, lng: -86.6188,
+                type: "green",
+                price: "$180k - $280k",
+                roi: "283%",
+                occupancy: "72%",
+                verdict: "BEST OVERALL CHOICE",
+                desc: "Highest ROI & Occupancy. Minimal regulation. Military stability."
+            },
+            {
+                name: "Destin",
+                lat: 30.3935, lng: -86.4958,
+                type: "green",
+                price: "$250k - $400k+",
+                roi: "High",
+                occupancy: "66%",
+                verdict: "PREMIUM MARKET",
+                desc: "Established luxury market. Higher entry cost but strong returns."
+            },
+            {
+                name: "Panama City Beach",
+                lat: 30.1766, lng: -85.8055,
+                type: "green",
+                price: "$180k - $280k",
+                roi: "207%",
+                occupancy: "53-58%",
+                verdict: "STRONG PERFORMER",
+                desc: "High revenue potential. Straightforward registration."
+            },
+            {
+                name: "Anna Maria Island",
+                lat: 27.5131, lng: -82.7193,
+                type: "green",
+                price: "$350k - $550k",
+                roi: "390%",
+                occupancy: "67.5%",
+                verdict: "HIGHEST REVENUE",
+                desc: "Premium beach destination. Highest ADR ($482). High entry cost."
+            },
+            {
+                name: "Crystal River / Homosassa",
+                lat: 28.9005, lng: -82.5937,
+                type: "blue",
+                price: "$130k - $220k",
+                roi: "137%",
+                occupancy: "40-50%",
+                verdict: "BEST BUDGET OPTION",
+                desc: "Lowest entry cost. Minimal regulation. Ecotourism niche."
+            },
+            {
+                name: "St. George Island",
+                lat: 29.6577, lng: -84.8802,
+                type: "blue",
+                price: "$280k - $450k",
+                roi: "214%",
+                occupancy: "45-55%",
+                verdict: "LIFESTYLE CHOICE",
+                desc: "Minimal regulation. Quiet, family-oriented. Niche market."
+            },
+            {
+                name: "Apalachicola",
+                lat: 29.7258, lng: -84.9833,
+                type: "blue",
+                price: "$180k - $280k",
+                roi: "Good",
+                occupancy: "Moderate",
+                verdict: "HISTORIC CHARM",
+                desc: "Affordable alternative to St. George Island. Unique appeal."
+            },
+            {
+                name: "Bradenton (Mainland)",
+                lat: 27.4989, lng: -82.5748,
+                type: "blue",
+                price: "$180k - $280k",
+                roi: "180%",
+                occupancy: "50-60%",
+                verdict: "BALANCED OPTION",
+                desc: "Affordable entry near AMI. No county ordinances."
+            },
+            {
+                name: "Port Charlotte",
+                lat: 26.9762, lng: -82.0905,
+                type: "yellow",
+                price: "$150k - $220k",
+                roi: "65%",
+                occupancy: "40-50%",
+                verdict: "MARGINAL FOR STR",
+                desc: "Better for seasonal/snowbird rentals. Modest returns."
+            },
+            {
+                name: "Punta Gorda",
+                lat: 26.9298, lng: -82.0454,
+                type: "yellow",
+                price: "$180k - $260k",
+                roi: "Modest",
+                occupancy: "40-50%",
+                verdict: "SEASONAL MARKET",
+                desc: "Waterfront appeal but lower STR demand."
+            },
+            {
+                name: "St. Petersburg",
+                lat: 27.7676, lng: -82.6403,
+                type: "red",
+                price: "N/A",
+                roi: "N/A",
+                occupancy: "N/A",
+                verdict: "AVOID",
+                desc: "Max 3 rentals per year allowed. Not viable for STR."
+            },
+            {
+                name: "Clearwater",
+                lat: 27.9659, lng: -82.8001,
+                type: "red",
+                price: "N/A",
+                roi: "N/A",
+                occupancy: "N/A",
+                verdict: "AVOID",
+                desc: "STR prohibited in residential zones."
+            }
+        ];
+
+        // Custom Icon Function
+        function createIcon(type) {
+            return L.divIcon({
+                className: 'custom-div-icon',
+                html: `<div style="background-color:${getColor(type)};width:12px;height:12px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 4px rgba(0,0,0,0.5);"></div>`,
+                iconSize: [12, 12],
+                iconAnchor: [6, 6]
+            });
+        }
+
+        function getColor(type) {
+            if (type === 'green') return '#2ecc71';
+            if (type === 'blue') return '#3498db';
+            if (type === 'yellow') return '#f1c40f';
+            if (type === 'red') return '#e74c3c';
+            return '#ccc';
+        }
+
+        // Add markers
+        locations.forEach(loc => {
+            const marker = L.circleMarker([loc.lat, loc.lng], {
+                color: getColor(loc.type),
+                fillColor: getColor(loc.type),
+                fillOpacity: 0.8,
+                radius: 8
+            }).addTo(map);
+
+            const popupContent = `
+      <div class="popup-header">
+        <div class="popup-title">${loc.name}</div>
+        <div class="popup-subtitle" style="color:${getColor(loc.type)}">${loc.type.toUpperCase()} TIER</div>
+      </div>
+      <div class="popup-body">
+        <div class="popup-stat-row">
+          <span class="popup-stat-label">Entry Price</span>
+          <span class="popup-stat-value">${loc.price}</span>
+        </div>
+        <div class="popup-stat-row">
+          <span class="popup-stat-label">5-Yr ROI</span>
+          <span class="popup-stat-value">${loc.roi}</span>
+        </div>
+        <div class="popup-stat-row">
+          <span class="popup-stat-label">Occupancy</span>
+          <span class="popup-stat-value">${loc.occupancy}</span>
+        </div>
+        <p style="margin-top:0.8rem; font-size:0.9rem; line-height:1.4; color:#ccc;">${loc.desc}</p>
+        <div class="popup-verdict verdict-${loc.type}">
+          ${loc.verdict}
+        </div>
+      </div>
+    `;
+
+            marker.bindPopup(popupContent);
+        });
+
+    </script>
+</body>
+
+</html>

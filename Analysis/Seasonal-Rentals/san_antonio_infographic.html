@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>San Antonio Seasonal Rental Analysis</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #1a1a1a;
+            --bg-card: #2d2d2d;
+            --accent-primary: #d35400;
+            /* Burnt Orange/Terracotta for SA */
+            --accent-secondary: #f39c12;
+            /* Gold/Yellow */
+            --text-main: #f0f0f0;
+            --text-muted: #a0a0a0;
+            --good: #27ae60;
+            --bad: #c0392b;
+            --neutral: #7f8c8d;
+            --highlight: #e67e22;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            line-height: 1.5;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid var(--accent-primary);
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--accent-secondary), var(--accent-primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+        }
+
+        /* Section Styles */
+        .section {
+            margin-bottom: 4rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            border-left: 5px solid var(--accent-primary);
+            padding-left: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* 1. Executive Summary Cards */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .summary-card {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border-top: 4px solid var(--accent-secondary);
+        }
+
+        .summary-card h3 {
+            color: var(--highlight);
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        /* 2. Regulatory Alert */
+        .alert-box {
+            background: rgba(192, 57, 43, 0.1);
+            border: 2px solid var(--bad);
+            border-radius: 16px;
+            padding: 2rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 2rem;
+        }
+
+        .alert-icon {
+            font-size: 3rem;
+        }
+
+        .alert-content h3 {
+            color: var(--bad);
+            margin-bottom: 0.5rem;
+            font-size: 1.5rem;
+        }
+
+        .checklist {
+            list-style: none;
+            margin-top: 1rem;
+        }
+
+        .checklist li {
+            margin-bottom: 0.5rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .checklist li::before {
+            content: "⚠️";
+            position: absolute;
+            left: 0;
+        }
+
+        /* 3. Neighborhood Tiers */
+        .tier-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .tier-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .tier-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .tier-header {
+            padding: 1rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        .tier-1 {
+            background: var(--good);
+            color: white;
+        }
+
+        .tier-2 {
+            background: var(--bad);
+            color: white;
+        }
+
+        /* Too expensive */
+        .tier-3 {
+            background: var(--accent-secondary);
+            color: black;
+        }
+
+        .tier-body {
+            padding: 1.5rem;
+        }
+
+        .tier-stat {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 0.2rem;
+        }
+
+        /* 4. Financial Scenarios */
+        .finance-container {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .finance-card {
+            flex: 1;
+            min-width: 300px;
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .finance-title {
+            font-size: 1.4rem;
+            color: var(--highlight);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .cashflow-box {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+
+        .cashflow-val {
+            font-size: 2rem;
+            font-weight: 800;
+        }
+
+        .cashflow-val.negative {
+            color: var(--bad);
+        }
+
+        .cashflow-val.neutral {
+            color: var(--accent-secondary);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 4rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--bg-card);
+            padding-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .alert-box {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>San Antonio Seasonal Rental Analysis</h1>
+        <p class="subtitle">Urban Tourism • Year-Round Demand • Regulatory Reality Check</p>
+    </header>
+
+    <!-- Section 1: Market Overview -->
+    <div class="section">
+        <h2 class="section-title">Why San Antonio?</h2>
+        <div class="summary-grid">
+            <div class="summary-card">
+                <h3>🏙️ Urban vs. Beach</h3>
+                <p>Unlike coastal markets, San Antonio offers <strong>year-round demand</strong> driven by conventions,
+                    medical tourism, military visits, and cultural events (Fiesta, Rodeo).</p>
+            </div>
+            <div class="summary-card">
+                <h3>📈 Market Stats</h3>
+                <ul style="list-style:none; padding:0;">
+                    <li style="margin-bottom:0.5rem;"><strong>Visitors:</strong> 39+ Million/Year</li>
+                    <li style="margin-bottom:0.5rem;"><strong>Occupancy:</strong> 50-60% (Stable)</li>
+                    <li style="margin-bottom:0.5rem;"><strong>Avg Daily Rate:</strong> $170 - $190</li>
+                </ul>
+            </div>
+            <div class="summary-card">
+                <h3>🎯 The Goal</h3>
+                <p>Effective <strong>$100k Investment</strong> after rental offset.</p>
+                <p style="margin-top:0.5rem; font-size:0.9rem; color:var(--text-muted);">Targeting 6-month personal use
+                    + 6-month rental income.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 2: The Regulatory Trap -->
+    <div class="section">
+        <div class="alert-box">
+            <div class="alert-icon">👮‍♂️</div>
+            <div class="alert-content">
+                <h3>CRITICAL: Regulatory Hurdles</h3>
+                <p>San Antonio has strict rules for non-owner occupied rentals (Type 2). <strong>You must verify these
+                        before buying.</strong></p>
+                <ul class="checklist">
+                    <li><strong>Type 2 Permit Required:</strong> You are a "Non-Owner Occupied" host ($450/yr).</li>
+                    <li><strong>Density Caps:</strong> Max 12.5% of units in a block/building can be Type 2 STRs.</li>
+                    <li><strong>Hotel Occupancy Tax (HOT):</strong> You must collect/remit <strong>16.75%</strong> total
+                        tax.</li>
+                    <li><strong>HOA Restrictions:</strong> Many condos prohibit STRs entirely.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 3: Neighborhood Tiers -->
+    <div class="section">
+        <h2 class="section-title">Where to Invest? (Tiered Analysis)</h2>
+        <div class="tier-grid">
+
+            <!-- Tier 1 -->
+            <div class="tier-card">
+                <div class="tier-header tier-1">Tier 1: High Yield</div>
+                <div class="tier-body">
+                    <p style="margin-bottom:1rem; font-weight:600;">Southwest & Military Areas (78224, 78227)</p>
+                    <div class="tier-stat"><span>Gross Yield</span> <span>16-19%</span></div>
+                    <div class="tier-stat"><span>Entry Price</span> <span>$160k - $220k</span></div>
+                    <div class="tier-stat"><span>Driver</span> <span>Military Families</span></div>
+                    <p style="margin-top:1rem; font-size:0.9rem;"><strong>Verdict:</strong> Best cash flow potential.
+                        Affordable entry.</p>
+                </div>
+            </div>
+
+            <!-- Tier 3 -->
+            <div class="tier-card">
+                <div class="tier-header tier-3">Tier 3: Affordable</div>
+                <div class="tier-body">
+                    <p style="margin-bottom:1rem; font-weight:600;">Westside & Eastside (Revitalizing)</p>
+                    <div class="tier-stat"><span>Gross Yield</span> <span>Varies</span></div>
+                    <div class="tier-stat"><span>Entry Price</span> <span>$90k - $150k</span></div>
+                    <div class="tier-stat"><span>Driver</span> <span>Value/Renovation</span></div>
+                    <p style="margin-top:1rem; font-size:0.9rem;"><strong>Verdict:</strong> Fits budget, but lower
+                        nightly rates & gentrification risks.</p>
+                </div>
+            </div>
+
+            <!-- Tier 2 -->
+            <div class="tier-card">
+                <div class="tier-header tier-2">Tier 2: Premium Urban</div>
+                <div class="tier-body">
+                    <p style="margin-bottom:1rem; font-weight:600;">Downtown, Pearl, Southtown</p>
+                    <div class="tier-stat"><span>Gross Yield</span> <span>10-12%</span></div>
+                    <div class="tier-stat"><span>Entry Price</span> <span>$400k+</span></div>
+                    <div class="tier-stat"><span>Driver</span> <span>Tourists/Biz</span></div>
+                    <p style="margin-top:1rem; font-size:0.9rem;"><strong>Verdict:</strong> Too expensive for current
+                        budget goals.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Section 4: Financial Reality -->
+    <div class="section">
+        <h2 class="section-title">Financial Reality (6-Month Rental Season)</h2>
+        <div class="finance-container">
+
+            <!-- Option 1 -->
+            <div class="finance-card">
+                <div class="finance-title">Option 1: SW Condo</div>
+                <p style="text-align:center; color:var(--text-muted);">Purchase: $135,000</p>
+
+                <div class="cashflow-box">
+                    <div style="font-size:0.9rem; margin-bottom:0.5rem;">Projected Annual Cash Flow</div>
+                    <div class="cashflow-val neutral">-$207</div>
+                    <div style="font-size:0.8rem; color:var(--text-muted);">at 65% Occupancy</div>
+                </div>
+
+                <ul style="font-size:0.9rem; color:var(--text-muted); list-style:none;">
+                    <li>• <strong>Net Income:</strong> ~$16,500</li>
+                    <li>• <strong>Annual Costs:</strong> ~$16,700</li>
+                    <li>• <strong>Result:</strong> Break-Even / Lifestyle Play</li>
+                </ul>
+            </div>
+
+            <!-- Option 2 -->
+            <div class="finance-card">
+                <div class="finance-title">Option 2: Westside Home</div>
+                <p style="text-align:center; color:var(--text-muted);">Purchase: $130,000</p>
+
+                <div class="cashflow-box">
+                    <div style="font-size:0.9rem; margin-bottom:0.5rem;">Projected Annual Cash Flow</div>
+                    <div class="cashflow-val negative">-$2,921</div>
+                    <div style="font-size:0.8rem; color:var(--text-muted);">at 60% Occupancy</div>
+                </div>
+
+                <ul style="font-size:0.9rem; color:var(--text-muted); list-style:none;">
+                    <li>• <strong>Net Income:</strong> ~$13,000</li>
+                    <li>• <strong>Annual Costs:</strong> ~$15,900</li>
+                    <li>• <strong>Result:</strong> Negative Cash Flow</li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Generated from <strong>San Antonio Seasonal Rental Investment Analysis</strong> • November 25, 2025</p>
+    </div>
+
+</body>
+
+</html>
